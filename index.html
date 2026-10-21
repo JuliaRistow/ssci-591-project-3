@@ -44,53 +44,78 @@
 
       // Configure the renderer to alter the symbol style, size breaks, and legend.
       const outline = { color: "#A9A9A9", width: 0.5 }; // autocasts as new SimpleLineSymbol()
-      const renderer = {
-        type: "simple", // autocasts as new SimpleRenderer()
-        // autocasts as new SimpleMarkerSymbol()
-        symbol: { type: "simple-marker", size: 6, color: "#13EB0C", outline },
-        visualVariables: [
-          {
-            type: "size", // autocasts as new SizeVariable()
-            field: "C_Storage",
-            legendOptions: { title: "Carbon Storage" },
-            stops: [
-              { value: 1000, size: 4, label: "<1000" },
-              { value: 4000, size: 12, label: "4000" },
-              { value: 8000, size: 20, label: "8000" },
-              { value: 10000, size: 26, label: "10,000" },
-              { value: 13000, size: 30, label: ">13,000" },
-            ],
-          },
-        ],
-      };
+      
+      const UniqueValueRenderer = await $arcgis.import("@arcgis/core/renderers/UniqueValueRenderer.js"); // autocasts as new UniqueValueRenderer()
+      const camp = { type: "simple-marker", style: "triangle", size: 8, color: "#684217ff", outline: {color: "#A9A9A9", width: 0.5} }; // autocasts as new SimpleMarkerSymbol()
+      const rest = { type: "simple-marker", style: "square", size: 8, color: "#6780b0ff", outline: {color: "#A9A9A9", width: 0.5} };
+      const restshower = { type: "simple-marker", style: "square", size: 8, color: "#8ac3d3ff", outline: {color: "#A9A9A9", width: 0.5} }; 
+      const trailnopark = { type: "simple-marker", style: "circle", size: 8, color: "#b86b53ff", outline: {color: "#A9A9A9", width: 0.5} };
+      const trailparklot = { type: "simple-marker", style: "circle", size: 8, color: "#3e756dff", outline: {color: "#A9A9A9", width: 0.5} };
+      const trailroadpark = { type: "simple-marker", style: "circle", size: 8, color: "#d9d78cff", outline: {color: "#A9A9A9", width: 0.5} };
 
-      const fieldFormat = { type: "number", useGrouping: "always" };
-      const fieldInfos = [{ fieldName: "Crown_Height" }, { fieldName: "C_Storage" }];
-      const featureLayer = new FeatureLayer({
-        // Point to the Warren Wilson College tree carbon storage service.
-        url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Landscape_Trees/FeatureServer/0",
-        // Define the number formatting and labels for popup values.
-        fieldConfigurations: [
-          { name: "Crown_Height", alias: "Crown Height (ft)", fieldFormat },
-          { name: "C_Storage", alias: "Carbon Storage (kg)", fieldFormat },
-        ],
-        // Order smaller features on top of larger features based on carbon storage.
-        orderBy: [{ field: "C_Storage" }], // defaults to ascending
-        popupTemplate: {
-          title: "Tree ID: {Tree_ID}", // Specify the popup title.
-          content: [{ type: "fields", fieldInfos }], // Specify the fields to display.
+      
+      const poi = new FeatureLayer({
+        // Define the URL to the feature service containing the points of interest.
+        url: "https://services1.arcgis.com/4QPaqCJqF1UIaPbN/arcgis/rest/services/Point_of_Interests/FeatureServer/0",
+        title: "Santa Clara County Parks Points of Interest",
+          // Define the renderer for the points of interest layer.
+        renderer: {
+          type: "unique-value", // autocasts as new UniqueValueRenderer()
+          field: "type", // Specify the field to visualize.
+          uniqueValueInfos: [
+            {
+              value: "CAMPGROUND", // features labeled as "CAMPGROUND"
+            label: "Campground",  // will be displayed as Campground
+              symbol: camp  // will be assigned camp
+            }, {
+              value: "RESTROOM",  // features labeled as "RESTROOM"
+              label: "Restroom",  // will be displayed as Restroom
+              symbol: rest  // will be assigned rest
+            }, {
+              value: "RESTROOM WITH SHOWER",  // features labeled as "RESTROOM WITH SHOWER"
+              label: "Restroom with Shower",  // will be displayed as Restroom with Shower
+              symbol: restshower  // will be assigned restshower
+            }, {
+              value: "TRAILHEAD WITH NO PARKING",  // features labeled as "TRAILHEAD WITH NO PARKING"
+              label: "Trailhead with No Parking",  // will be displayed as Trailhead with No Parking
+              symbol: trailnopark  // will be assigned trailnopark
+            }, {
+              value: "TRAILHEAD WITH PARKING LOT",  // features labeled as "TRAILHEAD WITH PARKING LOT"
+              label: "Trailhead with Parking Lot",  // will be displayed as Trailhead with Parking Lot
+              symbol: trailparklot  // will be assigned trailparklot
+            }, {
+              value: "TRAILHEAD WITH ROADSIDE PARKING",  // features labeled as "TRAILHEAD WITH ROADSIDE PARKING"
+              label: "Trailhead with Roadside Parking",  // will be displayed as Trailhead with Roadside Parking
+              symbol: trailroadpark  // will be assigned trailroadpark
+            }
+          ]
         },
-        renderer, // Add the renderer to load the symbol configuration.
+        
+        
+        // Order features by type
+        orderBy: [{ field: "type" }], // defaults to ascending
+        
+        popupTemplate: {
+          title: "{type}", // Specify the popup title.
+          content: [{ 
+            type: "fields", 
+            fieldInfos: [
+              { fieldName: "park_name", label: "Park Name" },
+              { fieldName: "name", label: "Name" },
+              { fieldName: "description", label: "Description" },
+              { fieldName: "amenities", label: "Amenities" },
+            ]}], // Specify the fields to display.
+        } // Add the renderer to load the symbol configuration.
       });
 
-      viewElement.map.add(featureLayer); // Use the map property to add the layer.
-      await viewElement.whenLayerView(featureLayer); // Wait for the layer to be usable.
+      viewElement.map.add(poi); // Use the map property to add the layer.
+      await viewElement.whenLayerView(poi); // Wait for the layer to be usable.
 
       // Zoom to the layer's full extent and customize the animation.
-      await viewElement.goTo(featureLayer.fullExtent, { animate: true, duration: 2500 });
+      await viewElement.goTo(poi.fullExtent, { animate: true, duration: 2500 });
 
       // Constrain navigation to the layer's full extent.
-      viewElement.constraints = { geometry: featureLayer.fullExtent, minScale: 10000 };
+      viewElement.constraints = { geometry: poi.fullExtent, minScale: 10000 };
     </script>
   </body>
 </html>
