@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>VTA Bus Stops and Santa Clara County Parks Trails</title>
+    <title>Santa Clara County Parks Trails and Points of Interest</title>
 
     <!-- Load the ArcGIS Maps SDK for JavaScript from CDN -->
     <script type="module" src="https://js.arcgis.com/5.1/"></script>
@@ -20,16 +20,20 @@
   <body>
 
     <header>
-      <h1>VTA Bus Stops and Santa Clara County Parks Trails</h1>
-      <p>Bus stops in the Santa Clara Valley Transit Authority system and trails 
-        in Santa Clara County Parks in California. Click a bus stop for the stop 
-        name and routes. Click a trail for the trail name and details.</p>
+      <h1>Santa Clara County Parks Trails and Amenities</h1>
+      <p>Trails and amenities in California's Santa Clara County Parks.  
+        Click a trail for the trail name and details.
+       Click an amenity for the amenity type and information.</p>
     </header>
     
-    <arcgis-map basemap="topo-vector" center="-121.879, 37.256" zoom="10">
+    <arcgis-map basemap="topo-vector" center="-121.879, 37.155" zoom="11">
       <arcgis-zoom slot="top-left"></arcgis-zoom>
-      <arcgis-layer-list slot="top-right"></arcgis-layer-list>
-      <arcgis-legend slot="bottom-left"></arcgis-legend>
+      <arcgis-home slot="top-left"></arcgis-home>
+      <arcgis-search slot="top-right"></arcgis-search>
+      <arcgis-expand slot="bottom-left" expand-tooltip="Legend" collapse-tooltip="Hide legend">
+        <arcgis-legend></arcgis-legend>
+      </arcgis-expand>
+      <!-- <arcgis-layer-list slot="top-right"></arcgis-layer-list> -->
     </arcgis-map>
 
     <script type="module">
