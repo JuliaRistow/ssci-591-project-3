@@ -168,9 +168,6 @@
       // Zoom to the layer's full extent and customize the animation.
       await viewElement.goTo(poi.fullExtent, { animate: true, duration: 2500 });
 
-      // Constrain navigation to the layer's full extent.
-      viewElement.constraints = { geometry: poi.fullExtent, minScale: 10000 };
-
       viewElement.map.add(trails); // Add the trails layer to the map.
     </script>
   </body>
