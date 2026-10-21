@@ -108,6 +108,60 @@
         } // Add the renderer to load the symbol configuration.
       });
 
+      const unpavtrail = { type: "simple-line", style: "short-dash", color: "#ad8b62ff", width: 1 }; // autocasts as new SimpleLineSymbol()
+      const unpavroad = { type: "simple-line", style: "short-dash-dot", color: "#ad8b62ff", width: 1.5 }; // autocasts as new SimpleLineSymbol()
+      const servroad = { type: "simple-line", style: "solid", color: "#666666ff", width: 2 }; // autocasts as new SimpleLineSymbol()
+      const pavtrail = { type: "simple-line", style: "solid", color: "#666666ff", width: 1 }; // autocasts as new SimpleLineSymbol()
+      const UniqueValueRenderer2 = await $arcgis.import("@arcgis/core/renderers/UniqueValueRenderer.js"); // autocasts as new UniqueValueRenderer()
+
+      const trails = new FeatureLayer({
+        url: "https://services1.arcgis.com/4QPaqCJqF1UIaPbN/arcgis/rest/services/Santa_Clara_County_Parks_Trails/FeatureServer/1",
+        title: "Santa Clara County Parks Trails",
+
+        renderer: {
+          type: "unique-value", // autocasts as new UniqueValueRenderer()
+          field: "route_type", // Specify the field to visualize.
+          uniqueValueInfos: [
+            {
+              value: "Unpaved Trail", // features labeled as "Unpaved Trail"
+              label: "Unpaved Trail",  // will be displayed as Unpaved Trail
+              symbol: unpavtrail  // will be assigned a simple line symbol with color and width
+            }, {
+              value: "Unpaved Road",  // features labeled as "Unpaved Road"
+              label: "Unpaved Road",  // will be displayed as Unpaved Road
+              symbol: unpavroad  // will be assigned a simple line symbol with color and width
+            }, {
+              value: "Service Road",  // features labeled as "Service Road"
+              label: "Service Road",  // will be displayed as Service Road
+              symbol: servroad  // will be assigned a simple line symbol with color and width
+            }, {
+              value: "Paved Trail or Pathway",  // features labeled as "Paved Trail or Pathway"
+              label: "Paved Trail or Pathway",  // will be displayed as Paved Trail or Pathway
+              symbol: pavtrail  // will be assigned a simple line symbol with color and width
+            }
+          ]
+          
+        },
+
+        popupTemplate: {
+          title: "Trail Name: {TRAIL_NAME}",
+          content: [
+            {
+              type: "fields",
+              fieldInfos: [
+                { fieldName: "park_name", label: "Park Name" },
+                { fieldName: "public_use", label: "Public Use" },
+                { fieldName: "dog_use", label: "Dog Use" },
+                { fieldName: "surface", label: "Trail Surface" },
+                { fieldName: "miles", label: "Length (mi)", format: { places: 3, digitSeparator: true } },
+                { fieldName: "difficulty", label: "Difficulty" },
+                { fieldName: "status", label: "Status" }
+              ],
+            },
+          ],
+        },
+      })
+
       viewElement.map.add(poi); // Use the map property to add the layer.
       await viewElement.whenLayerView(poi); // Wait for the layer to be usable.
 
@@ -116,6 +170,8 @@
 
       // Constrain navigation to the layer's full extent.
       viewElement.constraints = { geometry: poi.fullExtent, minScale: 10000 };
+
+      viewElement.map.add(trails); // Add the trails layer to the map.
     </script>
   </body>
 </html>
