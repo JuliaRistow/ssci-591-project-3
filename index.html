@@ -30,11 +30,16 @@
     /* buttons big enough for a thumb (44 px, Apple HIG) */
     .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 16px; 
       background: #f1f5f9; border-bottom: 1px solid #d9e2ec; }
-    .toolbar button {
+    .toolbar button[aria-pressed="false"] {
       min-height: 44px; min-width: 44px; padding: 0 16px;
       font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer;
       border: 2px solid #174427; background: #fff; color: #174427;
-    }
+    } /* button color when not pressed to indicate the filter is inactive */
+    .toolbar button[aria-pressed="true"] {
+      min-height: 44px; min-width: 44px; padding: 0 16px;
+      font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer;
+      border: 2px solid #05140b; background: #15502d; color: #fff;
+    } /* button color changes when pressed to indicate the filter is active */
 
     .toolbar button:hover[aria-pressed="false"] { background: #e9f5e9; }
 
@@ -179,13 +184,13 @@
         } // Add the renderer to load the symbol configuration.
       });
 
-      const unpavtrail = { type: "simple-line", style: "short-dash", color: "#ad8b62ff", width: 1 }; 
+      const unpavtrail = { type: "simple-line", style: "short-dash", color: "#A04000", width: 1 }; 
       // autocasts as new SimpleLineSymbol()
-      const unpavroad = { type: "simple-line", style: "short-dash-dot", color: "#ad8b62ff", width: 1.5 }; 
+      const unpavroad = { type: "simple-line", style: "short-dash-dot", color: "#A04000", width: 1.5 }; 
       // autocasts as new SimpleLineSymbol()
-      const servroad = { type: "simple-line", style: "solid", color: "#666666ff", width: 2 }; 
+      const servroad = { type: "simple-line", style: "solid", color: "#37474F", width: 2 }; 
       // autocasts as new SimpleLineSymbol()
-      const pavtrail = { type: "simple-line", style: "solid", color: "#666666ff", width: 1 }; 
+      const pavtrail = { type: "simple-line", style: "solid", color: "#37474F", width: 1 }; 
       // autocasts as new SimpleLineSymbol()
       const UniqueValueRenderer2 = await $arcgis.import("@arcgis/core/renderers/UniqueValueRenderer.js"); 
       // autocasts as new UniqueValueRenderer()
@@ -252,9 +257,22 @@
       const EASY = "difficulty LIKE '%Easy' or difficulty LIKE '%easy'";
       const MODERATE = "difficulty LIKE 'Moderate' or difficulty LIKE 'moderate'";
       const STRENUOUS = "difficulty LIKE '%Strenuous' or difficulty LIKE '%strenuous'";
+      const total  = await trails.queryFeatureCount({ where: "1=1" });
+
+      const difficultyButtons = [easyBtn, moderateBtn, strenuousBtn];
+
+      function selectDifficulty(selectedButton, filterExpression) {
+        difficultyButtons.forEach((button) => {
+          button.setAttribute(
+            "aria-pressed",
+            button === selectedButton ? "true" : "false"
+          );
+        });
+
+        trails.definitionExpression = filterExpression;
+      }
       
       async function updateStatusEasy() {
-      const total  = await trails.queryFeatureCount({ where: "1=1" });
       const easy = await trails.queryFeatureCount({ where: EASY });
       const easyPressed = easyBtn.getAttribute("aria-pressed") === "true";
       trailstatusEl.textContent = easyPressed
@@ -265,7 +283,6 @@
       await updateStatusEasy();
 
       async function updateStatusModerate() {
-      const total  = await trails.queryFeatureCount({ where: "1=1" });
       const moderate = await trails.queryFeatureCount({ where: MODERATE });
       const moderatePressed = moderateBtn.getAttribute("aria-pressed") === "true";
       trailstatusEl.textContent = moderatePressed
@@ -276,7 +293,6 @@
       await updateStatusModerate();
 
       async function updateStatusStrenuous() {
-      const total  = await trails.queryFeatureCount({ where: "1=1" });
       const strenuous = await trails.queryFeatureCount({ where: STRENUOUS });
       const strenuousPressed = strenuousBtn.getAttribute("aria-pressed") === "true";
       trailstatusEl.textContent = strenuousPressed
@@ -287,34 +303,33 @@
       await updateStatusStrenuous();
 
       easyBtn.addEventListener("click", async () => {
-        const on = easyBtn.getAttribute("aria-pressed") !== "true";
-        easyBtn.setAttribute("aria-pressed", String(on));
-        trails.definitionExpression = on ? EASY : null;
+        selectDifficulty(easyBtn, EASY);
         await updateStatusEasy();
       });
 
       moderateBtn.addEventListener("click", async () => {
-        const on = moderateBtn.getAttribute("aria-pressed") !== "true";
-        moderateBtn.setAttribute("aria-pressed", String(on));
-        trails.definitionExpression = on ? MODERATE : null;
+        selectDifficulty(moderateBtn, MODERATE);
         await updateStatusModerate();
       });
 
       strenuousBtn.addEventListener("click", async () => {
-        const on = strenuousBtn.getAttribute("aria-pressed") !== "true";
-        strenuousBtn.setAttribute("aria-pressed", String(on));
-        trails.definitionExpression = on ? STRENUOUS : null;
+        selectDifficulty(strenuousBtn, STRENUOUS);
         await updateStatusStrenuous();
       });
 
+      await trails.load();
+
+      function showTotalTrails() {
+        trailstatusEl.textContent = `${total} total trails available`;
+      }
+      showTotalTrails(); // Display the total when the page first opens
+
       resetBtn.addEventListener("click", async () => {
-        easyBtn.setAttribute("aria-pressed", "false");
-        moderateBtn.setAttribute("aria-pressed", "false");
-        strenuousBtn.setAttribute("aria-pressed", "false");
-        trails.definitionExpression = null;
-        await updateStatusEasy();
-        await updateStatusModerate();
-        await updateStatusStrenuous();
+        difficultyButtons.forEach((button) => {
+          button.setAttribute("aria-pressed", "false");
+        });
+        trails.definitionExpression = null; // remove the trail filter
+        showTotalTrails(); // restore total trail count
       });
     </script>
    </div> 
