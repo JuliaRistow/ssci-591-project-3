@@ -20,6 +20,10 @@
     header a:visited { color: #b5b1f6; text-decoration: underline; }
     header a:hover { color: #8db4f6; text-decoration: underline; }
 
+    .mobile-description {
+    display: none;
+    }
+
     header2 { background: #f1f5f9; color: #174427; padding: 5px 16px; }
     header2 p  { margin: 4px 0 0; font-size: 0.85rem; font-style: italic; opacity: 0.9; } 
 
@@ -41,7 +45,26 @@
 
     @media (max-width: 600px) {
       header h1 { font-size: 1.05rem; }
-      header p  { display: none; }            /* keep the small screen for the map */
+      
+      .desktop-description {
+        display: none;
+      }
+      .mobile-description {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.9rem;
+      }
+      .mobile-description summary {
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .mobile-description p {
+        display: block;
+        margin: 6px 0 0;
+        line-height: 1.4;
+      }
+      /* keep the small screen for the map with a drop down for the writen information */
+      
       .toolbar  { padding: 8px 12px; }
     }
   </style>
@@ -51,19 +74,35 @@
   <div id="app">  
     <header>
       <h1>Santa Clara County Parks Trails and Restrooms</h1>
-      <p>This map displays trails and restrooms located in Santa Clara County Parks to help users explore
+      
+      <!-- Displayed on larger screens -->
+      <p class="desktop-description">This map displays trails and restrooms located in Santa Clara County Parks to help users explore
         recreational routes and nearby facilities.</p>
-      <p>The trail and restroom data are loaded from live ArcGIS 
+      <p class="desktop-description">The trail and restroom data are loaded from live ArcGIS 
         feature services provided by Santa Clara County Parks: 
-        <a href="https://services1.arcgis.com/4QPaqCJqF1UIaPbN/arcgis/rest/services/Santa_Clara_County_Parks_Trails/FeatureServer/1" 
-          target="_blank">Trails</a> and
-        <a href="https://services1.arcgis.com/4QPaqCJqF1UIaPbN/arcgis/rest/services/Point_of_Interests/FeatureServer/0" 
-          target="_blank">Points of Interest</a>.
+        <a href="https://services1.arcgis.com/4QPaqCJqF1UIaPbN/arcgis/rest/services/Santa_Clara_County_Parks_Trails/FeatureServer/1" target="_blank">Trails</a> and
+        <a href="https://services1.arcgis.com/4QPaqCJqF1UIaPbN/arcgis/rest/services/Point_of_Interests/FeatureServer/0" target="_blank">Points of Interest</a>.
         The original ArcGIS sample was customized to display this data by changing the map’s center, basemap, symbols, and popup 
         information. Trail-difficulty filters with buttons, a dynamic trail count, and a search component were also added
         to make the map easier to explore.
       </p>  
-      <p>Click a trail or restroom on the map for more information.</p>
+      <p class="desktop-description">Click a trail or restroom on the map for more information.</p>
+      
+      <!-- Displayed on smaller screens -->
+        <details class="mobile-description">
+          <summary>About this map</summary>
+          <p>This map displays trails and restrooms located in Santa Clara County Parks to help users explore
+            recreational routes and nearby facilities.</p>
+          <p>The trail and restroom data are loaded from live ArcGIS 
+            feature services provided by Santa Clara County Parks: 
+            <a href="https://services1.arcgis.com/4QPaqCJqF1UIaPbN/arcgis/rest/services/Santa_Clara_County_Parks_Trails/FeatureServer/1" target="_blank">Trails</a> and
+            <a href="https://services1.arcgis.com/4QPaqCJqF1UIaPbN/arcgis/rest/services/Point_of_Interests/FeatureServer/0" target="_blank">Points of Interest</a>.
+            The original ArcGIS sample was customized to display this data by changing the map’s center, basemap, symbols, and popup 
+            information. Trail-difficulty filters with buttons, a dynamic trail count, and a search component were also added
+            to make the map easier to explore.
+          </p>  
+          <p>Click a trail or restroom on the map for more information.</p>
+        </details>
     </header>
 
     <header2>
