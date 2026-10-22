@@ -129,7 +129,7 @@
         <arcgis-layer-list ></arcgis-layer-list>
       </arcgis-expand>
       <arcgis-search slot="top-right" placeholder="Search by park name" include-default-sources-disabled></arcgis-search>
-      <arcgis-expand slot="bottom-left" expand-tooltip="Legend" collapse-tooltip="Hide legend">
+      <arcgis-expand id= "legendExpand"slot="bottom-left" expand-tooltip="Legend" collapse-tooltip="Hide legend">
         <arcgis-legend></arcgis-legend>
       </arcgis-expand>
       <arcgis-scale-bar slot="bottom-right" bar-style="ruler" unit="imperial"></arcgis-scale-bar>
@@ -145,7 +145,7 @@
       const strenuousBtn   = document.querySelector("#strenuousBtn");
       const resetBtn   = document.querySelector("#resetBtn");
       const searchEl    = document.querySelector("arcgis-search");
-      const expandEl    = document.querySelector("arcgis-expand");
+      const expandEl    = document.querySelector("#legendExpand");
       await viewElement.viewOnReady(); // Wait for the properties to be ready.
 
       const outline = { color: "#A9A9A9", width: 0.5 }; // autocasts as new SimpleLineSymbol()
@@ -253,6 +253,10 @@
         { layer: trails,  searchFields: ["park_name"], displayField: "trail_name", 
         outFields: ["*"], name: "Trails", placeholder: "Park name, e.g. Vasona", exactMatch: false },
       ];
+
+      // on a wide screen the legend can stay open; on a phone it starts folded
+      if (window.matchMedia("(min-width: 700px)").matches) { expandEl.expanded = true; }
+
 
       const EASY = "difficulty LIKE '%Easy' or difficulty LIKE '%easy'";
       const MODERATE = "difficulty LIKE 'Moderate' or difficulty LIKE 'moderate'";
