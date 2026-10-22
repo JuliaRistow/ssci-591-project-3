@@ -62,13 +62,16 @@ I also want to expand the application by displaying additional types of points o
 ## Credits:
 
 *Data:* 
+
 Santa Clara County Parks and Recreation (2026). Santa Clara County Parks Points of Interest (dataset). Santa Clara County Parks GIS. https://gisdata-sccparks.hub.arcgis.com/datasets/SCCParks::santa-clara-county-parks-points-of-interest/about
 Santa Clara County Parks and Recreation (2026). Santa Clara County Parks Trails (dataset). Santa Clara County Parks GIS. https://gisdata-sccparks.hub.arcgis.com/datasets/SCCParks::santa-clara-county-parks-trails-1/about
 
 *Sample Code:*
+
 ArcGIS Maps SDK for JavaScript // Sample Code. Intro to FeatureLayer (Sample Code). Esri Developers. https://developers.arcgis.com/javascript/latest/sample-code/intro-featurelayer/
 
-*Additional References:*
+*Additional References:* 
+
 ArcGIS Maps SDK for JavaScript // References. arcgis-scale-bar (Reference). Esri Developers. https://developers.arcgis.com/javascript/latest/references/map-components/components/arcgis-scale-bar/
 ArcGIS Maps SDK for JavaScript // References. SimpleLineSymbol (Reference). Esri Developers. https://developers.arcgis.com/javascript/latest/references/core/symbols/SimpleLineSymbol/
 ArcGIS Maps SDK for JavaScript // References. UniqueValueRenderer (Reference). Esri Developers. https://developers.arcgis.com/javascript/latest/references/core/renderers/UniqueValueRenderer/
