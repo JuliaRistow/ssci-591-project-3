@@ -3,116 +3,153 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>Santa Clara County Parks Trails and Points of Interest</title>
+    <title>Santa Clara County Parks Trails and Restrooms</title>
 
     <!-- Load the ArcGIS Maps SDK for JavaScript from CDN -->
     <script type="module" src="https://js.arcgis.com/5.1/"></script>
 
     <style>
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-      }
-    </style>
+    /* design for the phone first, then let the desktop have more room */
+    html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    #app { display: flex; flex-direction: column; height: 100dvh; }
+
+    header { background: #174427; color: #fff; padding: 10px 16px; }
+    header h1 { margin: 0; font-size: 1.75rem; line-height: 1.3; }
+    header p  { margin: 4px 0 0; font-size: 0.95rem; }
+    header a:link { color: #bfd7ff; text-decoration: underline; }
+    header a:visited { color: #b5b1f6; text-decoration: underline; }
+    header a:hover { color: #8db4f6; text-decoration: underline; }
+
+    header2 { background: #f1f5f9; color: #174427; padding: 5px 16px; }
+    header2 p  { margin: 4px 0 0; font-size: 0.85rem; font-style: italic; opacity: 0.9; } 
+
+    /* buttons big enough for a thumb (44 px, Apple HIG) */
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 16px; 
+      background: #f1f5f9; border-bottom: 1px solid #d9e2ec; }
+    .toolbar button {
+      min-height: 44px; min-width: 44px; padding: 0 16px;
+      font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer;
+      border: 2px solid #174427; background: #fff; color: #174427;
+    }
+
+    .toolbar button:hover[aria-pressed="false"] { background: #e9f5e9; }
+
+    /* the user can always see what the system is doing */
+    #trailstatus { font-size: 0.95rem; color: #174427; }
+
+    arcgis-map { flex: 1; height: 75vh; display: block; }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.05rem; }
+      header p  { display: none; }            /* keep the small screen for the map */
+      .toolbar  { padding: 8px 12px; }
+    }
+  </style>
   </head>
 
   <body>
-
+  <div id="app">  
     <header>
-      <h1>Santa Clara County Parks Trails and Amenities</h1>
-      <p>Trails and amenities in California's Santa Clara County Parks.  
-        Click a trail for the trail name and details.
-       Click an amenity for the amenity type and information.</p>
+      <h1>Santa Clara County Parks Trails and Restrooms</h1>
+      <p>This map displays trails and restrooms located in Santa Clara County Parks to help users explore
+        recreational routes and nearby facilities.</p>
+      <p>The trail and restroom data are loaded from live ArcGIS 
+        feature services provided by Santa Clara County Parks: 
+        <a href="https://services1.arcgis.com/4QPaqCJqF1UIaPbN/arcgis/rest/services/Santa_Clara_County_Parks_Trails/FeatureServer/1" 
+          target="_blank">Trails</a> and
+        <a href="https://services1.arcgis.com/4QPaqCJqF1UIaPbN/arcgis/rest/services/Point_of_Interests/FeatureServer/0" 
+          target="_blank">Points of Interest</a>.
+        The original ArcGIS sample was customized to display this data by changing the map’s center, basemap, symbols, and popup 
+        information. Trail-difficulty filters with buttons, a dynamic trail count, and a search component were also added
+        to make the map easier to explore.
+      </p>  
+      <p>Click a trail for the trail name and details. Click a restroom for more information.</p>
     </header>
-    
-    <arcgis-map basemap="topo-vector" center="-121.879, 37.155" zoom="11">
+
+    <header2>
+      <p>Click the buttons below to filter by trail difficulty:</p>
+    </header2>
+
+    <div class="toolbar">
+      <button id="easyBtn" type="button" aria-pressed="false">Easy trails only</button>
+      <button id="moderateBtn" type="button" aria-pressed="false">Moderate trails only</button>
+      <button id="strenuousBtn" type="button" aria-pressed="false">Strenuous trails only</button>
+      <button id="resetBtn" type="button" aria-pressed="false">Reset</button>
+      <span id="trailstatus" role="status" aria-live="polite">Loading trails…</span>
+    </div>
+
+    <arcgis-map basemap="topo-vector" center="-121.879, 37.215" zoom="10">
       <arcgis-zoom slot="top-left"></arcgis-zoom>
       <arcgis-home slot="top-left"></arcgis-home>
-      <arcgis-search slot="top-right"></arcgis-search>
+      <arcgis-expand slot="top-left" expand-tooltip="Layer List" collapse-tooltip="Hide Layer List">
+        <arcgis-layer-list ></arcgis-layer-list>
+      </arcgis-expand>
+      <arcgis-search slot="top-right" placeholder="Find a market or station" include-default-sources-disabled></arcgis-search>
       <arcgis-expand slot="bottom-left" expand-tooltip="Legend" collapse-tooltip="Hide legend">
         <arcgis-legend></arcgis-legend>
       </arcgis-expand>
-      <!-- <arcgis-layer-list slot="top-right"></arcgis-layer-list> -->
+      <arcgis-scale-bar slot="bottom-right" bar-style="ruler" unit="imperial"></arcgis-scale-bar>
     </arcgis-map>
 
-    <script type="module">
+   <script type="module">
       const FeatureLayer = await $arcgis.import("@arcgis/core/layers/FeatureLayer.js");
 
       const viewElement = document.querySelector("arcgis-map");
+      const trailstatusEl    = document.querySelector("#trailstatus");
+      const easyBtn   = document.querySelector("#easyBtn");
+      const moderateBtn   = document.querySelector("#moderateBtn");
+      const strenuousBtn   = document.querySelector("#strenuousBtn");
+      const resetBtn   = document.querySelector("#resetBtn");
+      const searchEl    = document.querySelector("arcgis-search");
+      const expandEl    = document.querySelector("arcgis-expand");
       await viewElement.viewOnReady(); // Wait for the properties to be ready.
 
-      // Configure the renderer to alter the symbol style, size breaks, and legend.
       const outline = { color: "#A9A9A9", width: 0.5 }; // autocasts as new SimpleLineSymbol()
-      
-      const UniqueValueRenderer = await $arcgis.import("@arcgis/core/renderers/UniqueValueRenderer.js"); // autocasts as new UniqueValueRenderer()
-      const camp = { type: "simple-marker", style: "triangle", size: 8, color: "#684217ff", outline: {color: "#A9A9A9", width: 0.5} }; // autocasts as new SimpleMarkerSymbol()
-      const rest = { type: "simple-marker", style: "square", size: 8, color: "#6780b0ff", outline: {color: "#A9A9A9", width: 0.5} };
-      const restshower = { type: "simple-marker", style: "square", size: 8, color: "#8ac3d3ff", outline: {color: "#A9A9A9", width: 0.5} }; 
-      const trailnopark = { type: "simple-marker", style: "circle", size: 8, color: "#b86b53ff", outline: {color: "#A9A9A9", width: 0.5} };
-      const trailparklot = { type: "simple-marker", style: "circle", size: 8, color: "#3e756dff", outline: {color: "#A9A9A9", width: 0.5} };
-      const trailroadpark = { type: "simple-marker", style: "circle", size: 8, color: "#d9d78cff", outline: {color: "#A9A9A9", width: 0.5} };
+      const UniqueValueRenderer = await $arcgis.import("@arcgis/core/renderers/UniqueValueRenderer.js"); 
+      // autocasts as new UniqueValueRenderer()
+      const rest = { type: "simple-marker", style: "square", size: 8, color: "#6780b0ff", 
+      outline: {color: "#A9A9A9", width: 0.5} };
 
       
       const poi = new FeatureLayer({
         // Define the URL to the feature service containing the points of interest.
         url: "https://services1.arcgis.com/4QPaqCJqF1UIaPbN/arcgis/rest/services/Point_of_Interests/FeatureServer/0",
-        title: "Santa Clara County Parks Points of Interest",
+        title: "Santa Clara County Parks Restrooms",
           // Define the renderer for the points of interest layer.
-        renderer: {
+        
+          renderer: {
           type: "unique-value", // autocasts as new UniqueValueRenderer()
           field: "type", // Specify the field to visualize.
           uniqueValueInfos: [
             {
-              value: "CAMPGROUND", // features labeled as "CAMPGROUND"
-            label: "Campground",  // will be displayed as Campground
-              symbol: camp  // will be assigned camp
-            }, {
               value: "RESTROOM",  // features labeled as "RESTROOM"
               label: "Restroom",  // will be displayed as Restroom
               symbol: rest  // will be assigned rest
-            }, {
-              value: "RESTROOM WITH SHOWER",  // features labeled as "RESTROOM WITH SHOWER"
-              label: "Restroom with Shower",  // will be displayed as Restroom with Shower
-              symbol: restshower  // will be assigned restshower
-            }, {
-              value: "TRAILHEAD WITH NO PARKING",  // features labeled as "TRAILHEAD WITH NO PARKING"
-              label: "Trailhead with No Parking",  // will be displayed as Trailhead with No Parking
-              symbol: trailnopark  // will be assigned trailnopark
-            }, {
-              value: "TRAILHEAD WITH PARKING LOT",  // features labeled as "TRAILHEAD WITH PARKING LOT"
-              label: "Trailhead with Parking Lot",  // will be displayed as Trailhead with Parking Lot
-              symbol: trailparklot  // will be assigned trailparklot
-            }, {
-              value: "TRAILHEAD WITH ROADSIDE PARKING",  // features labeled as "TRAILHEAD WITH ROADSIDE PARKING"
-              label: "Trailhead with Roadside Parking",  // will be displayed as Trailhead with Roadside Parking
-              symbol: trailroadpark  // will be assigned trailroadpark
             }
           ]
         },
-        
-        
-        // Order features by type
-        orderBy: [{ field: "type" }], // defaults to ascending
-        
+                
         popupTemplate: {
-          title: "{type}", // Specify the popup title.
+          title: "Restroom", // Specify the popup title.
           content: [{ 
             type: "fields", 
             fieldInfos: [
               { fieldName: "park_name", label: "Park Name" },
-              { fieldName: "name", label: "Name" },
-              { fieldName: "description", label: "Description" },
-              { fieldName: "amenities", label: "Amenities" },
+              { fieldName: "name", label: "Name" }
             ]}], // Specify the fields to display.
         } // Add the renderer to load the symbol configuration.
       });
 
-      const unpavtrail = { type: "simple-line", style: "short-dash", color: "#ad8b62ff", width: 1 }; // autocasts as new SimpleLineSymbol()
-      const unpavroad = { type: "simple-line", style: "short-dash-dot", color: "#ad8b62ff", width: 1.5 }; // autocasts as new SimpleLineSymbol()
-      const servroad = { type: "simple-line", style: "solid", color: "#666666ff", width: 2 }; // autocasts as new SimpleLineSymbol()
-      const pavtrail = { type: "simple-line", style: "solid", color: "#666666ff", width: 1 }; // autocasts as new SimpleLineSymbol()
-      const UniqueValueRenderer2 = await $arcgis.import("@arcgis/core/renderers/UniqueValueRenderer.js"); // autocasts as new UniqueValueRenderer()
+      const unpavtrail = { type: "simple-line", style: "short-dash", color: "#ad8b62ff", width: 1 }; 
+      // autocasts as new SimpleLineSymbol()
+      const unpavroad = { type: "simple-line", style: "short-dash-dot", color: "#ad8b62ff", width: 1.5 }; 
+      // autocasts as new SimpleLineSymbol()
+      const servroad = { type: "simple-line", style: "solid", color: "#666666ff", width: 2 }; 
+      // autocasts as new SimpleLineSymbol()
+      const pavtrail = { type: "simple-line", style: "solid", color: "#666666ff", width: 1 }; 
+      // autocasts as new SimpleLineSymbol()
+      const UniqueValueRenderer2 = await $arcgis.import("@arcgis/core/renderers/UniqueValueRenderer.js"); 
+      // autocasts as new UniqueValueRenderer()
 
       const trails = new FeatureLayer({
         url: "https://services1.arcgis.com/4QPaqCJqF1UIaPbN/arcgis/rest/services/Santa_Clara_County_Parks_Trails/FeatureServer/1",
@@ -152,8 +189,9 @@
                 { fieldName: "park_name", label: "Park Name" },
                 { fieldName: "public_use", label: "Public Use" },
                 { fieldName: "dog_use", label: "Dog Use" },
-                { fieldName: "surface", label: "Trail Surface" },
-                { fieldName: "miles", label: "Length (mi)", format: { places: 3, digitSeparator: true } },
+                { fieldName: "route_type", label: "Trail Type" },
+                { fieldName: "miles", label: "Length (mi)", format: { places: 3, digitSeparator: true } }, 
+                // Format the miles field to display 3 decimal places and use a digit separator.
                 { fieldName: "difficulty", label: "Difficulty" },
                 { fieldName: "status", label: "Status" }
               ],
@@ -162,13 +200,84 @@
         },
       })
 
-      viewElement.map.add(poi); // Use the map property to add the layer.
-      await viewElement.whenLayerView(poi); // Wait for the layer to be usable.
-
-      // Zoom to the layer's full extent and customize the animation.
-      await viewElement.goTo(poi.fullExtent, { animate: true, duration: 2500 });
-
       viewElement.map.add(trails); // Add the trails layer to the map.
+      viewElement.map.add(poi); // Use the map property to add the layer.
+      await viewElement.map.addMany([trails, poi]); // Add both layers to the map.
+
+      // (The default world geocoder needs an API key, so the tag above switches it off.)
+      searchEl.sources = [
+        { layer: trails,  searchFields: ["park_name"], displayField: "trail_name", 
+        outFields: ["*"], name: "Trails", placeholder: "Park name, e.g. Vasona", exactMatch: false },
+      ];
+
+      const EASY = "difficulty LIKE '%Easy' or difficulty LIKE '%easy'";
+      const MODERATE = "difficulty LIKE 'Moderate' or difficulty LIKE 'moderate'";
+      const STRENUOUS = "difficulty LIKE '%Strenuous' or difficulty LIKE '%strenuous'";
+      
+      async function updateStatusEasy() {
+      const total  = await trails.queryFeatureCount({ where: "1=1" });
+      const easy = await trails.queryFeatureCount({ where: EASY });
+      const easyPressed = easyBtn.getAttribute("aria-pressed") === "true";
+      trailstatusEl.textContent = easyPressed
+        ? `${easy} easy trails available`
+        : `${total} total trails available`;
+      }
+      await trails.load();
+      await updateStatusEasy();
+
+      async function updateStatusModerate() {
+      const total  = await trails.queryFeatureCount({ where: "1=1" });
+      const moderate = await trails.queryFeatureCount({ where: MODERATE });
+      const moderatePressed = moderateBtn.getAttribute("aria-pressed") === "true";
+      trailstatusEl.textContent = moderatePressed
+        ? `${moderate} moderate trails available`
+        : `${total} total trails available`;
+      }
+      await trails.load();
+      await updateStatusModerate();
+
+      async function updateStatusStrenuous() {
+      const total  = await trails.queryFeatureCount({ where: "1=1" });
+      const strenuous = await trails.queryFeatureCount({ where: STRENUOUS });
+      const strenuousPressed = strenuousBtn.getAttribute("aria-pressed") === "true";
+      trailstatusEl.textContent = strenuousPressed
+        ? `${strenuous} strenuous trails available`
+        : `${total} total trails available`;
+      }
+      await trails.load();
+      await updateStatusStrenuous();
+
+      easyBtn.addEventListener("click", async () => {
+        const on = easyBtn.getAttribute("aria-pressed") !== "true";
+        easyBtn.setAttribute("aria-pressed", String(on));
+        trails.definitionExpression = on ? EASY : null;
+        await updateStatusEasy();
+      });
+
+      moderateBtn.addEventListener("click", async () => {
+        const on = moderateBtn.getAttribute("aria-pressed") !== "true";
+        moderateBtn.setAttribute("aria-pressed", String(on));
+        trails.definitionExpression = on ? MODERATE : null;
+        await updateStatusModerate();
+      });
+
+      strenuousBtn.addEventListener("click", async () => {
+        const on = strenuousBtn.getAttribute("aria-pressed") !== "true";
+        strenuousBtn.setAttribute("aria-pressed", String(on));
+        trails.definitionExpression = on ? STRENUOUS : null;
+        await updateStatusStrenuous();
+      });
+
+      resetBtn.addEventListener("click", async () => {
+        easyBtn.setAttribute("aria-pressed", "false");
+        moderateBtn.setAttribute("aria-pressed", "false");
+        strenuousBtn.setAttribute("aria-pressed", "false");
+        trails.definitionExpression = null;
+        await updateStatusEasy();
+        await updateStatusModerate();
+        await updateStatusStrenuous();
+      });
     </script>
+   </div> 
   </body>
 </html>
