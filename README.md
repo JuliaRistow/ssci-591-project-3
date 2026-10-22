@@ -64,6 +64,7 @@ I also want to expand the application by displaying additional types of points o
 *Data:* 
 
 Santa Clara County Parks and Recreation (2026). Santa Clara County Parks Points of Interest (dataset). Santa Clara County Parks GIS. https://gisdata-sccparks.hub.arcgis.com/datasets/SCCParks::santa-clara-county-parks-points-of-interest/about
+
 Santa Clara County Parks and Recreation (2026). Santa Clara County Parks Trails (dataset). Santa Clara County Parks GIS. https://gisdata-sccparks.hub.arcgis.com/datasets/SCCParks::santa-clara-county-parks-trails-1/about
 
 *Sample Code:*
@@ -73,8 +74,13 @@ ArcGIS Maps SDK for JavaScript // Sample Code. Intro to FeatureLayer (Sample Cod
 *Additional References:* 
 
 ArcGIS Maps SDK for JavaScript // References. arcgis-scale-bar (Reference). Esri Developers. https://developers.arcgis.com/javascript/latest/references/map-components/components/arcgis-scale-bar/
+
 ArcGIS Maps SDK for JavaScript // References. SimpleLineSymbol (Reference). Esri Developers. https://developers.arcgis.com/javascript/latest/references/core/symbols/SimpleLineSymbol/
+
 ArcGIS Maps SDK for JavaScript // References. UniqueValueRenderer (Reference). Esri Developers. https://developers.arcgis.com/javascript/latest/references/core/renderers/UniqueValueRenderer/
+
 ChatGPT, responses to questions about debugging HTML and JavaScript code. OpenAI. http://chatgpt.com
+
 HTML Links. W3Schools. https://www.w3schools.com/html/html_links.asp
+
 HTML Links - Different Colors. W3Schools. https://www.w3schools.com/html/html_links_colors.asp
